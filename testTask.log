@@ -1,0 +1,1 @@
+0    [main] ERROR org.iis.Repositories.EmployerInfoRepository  - Unable to get instance of repository: Подсоединение по адресу localhost:25432 отклонено. Проверьте что хост и порт указаны правильно и что postmaster принимает TCP/IP-подсоединения.

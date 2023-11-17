@@ -1,0 +1,1 @@
+java -jar out/artifacts/testTask_jar_windows/testTask.jar %1 %2

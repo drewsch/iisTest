@@ -6,8 +6,14 @@
 
 для создания таблицы и наполнения стартовыми данными использовать: ```src/main/resources/databaseInitScript.sql```
 
-для использования программы использовать ```test.sh {command} {fileName}```
+далее необходимо сконфигурировать путь до базы данных в файле конфига ```src/main/resources/app.properties```
 
-примеры:   
-* ```test.sh export output.xml```
-* ```test.sh sync output.xml```
+для использования программы выполнить ```test.sh {command} {fileName}```
+
+примеры для linux:   
+* ```./test.sh export output.xml```
+* ```./test.sh sync output.xml```
+
+примеры для windows:   
+* ```test.bat export output.xml```
+* ```test.bat sync output.xml```

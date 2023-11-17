@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
   <artifact type="jar" name="testTask:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/testTask_jar</output-path>
+    <output-path>$PROJECT_DIR$/out/artifacts/testTask_jar_windows</output-path>
     <root id="archive" name="testTask.jar">
       <element id="module-output" name="testTask" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/xml-apis/xml-apis/1.0.b2/xml-apis-1.0.b2.jar" path-in-jar="/" />
