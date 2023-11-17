@@ -4,8 +4,7 @@ import org.apache.log4j.Logger;
 import org.iis.DTO.EmployerValueObject;
 import org.iis.Repositories.EmployerInfoRepository;
 
-import java.sql.SQLException;
-import java.util.List;
+import java.util.*;
 
 public class ImportDataService {
     final static Logger logger = Logger.getLogger(ImportDataService.class.getName());
@@ -17,56 +16,60 @@ public class ImportDataService {
      *
      * @param inputFileName name of incoming data file
      */
-    public static void importData(String inputFileName) throws SQLException {
+    public static void importData(String inputFileName) {
         try {
             assert employerInfoRepository != null;
 
             List<EmployerValueObject> currentItems = employerInfoRepository.fetchAll();
             List<EmployerValueObject> parsedData = XmlParser.fromXML(inputFileName);
 
-            List<EmployerValueObject> itemsToUpdate = DataDiff.getDiff(currentItems, parsedData, true);
-            List<EmployerValueObject> itemsToDelete = getItemsToDelete(currentItems, parsedData, itemsToUpdate);
-            List<EmployerValueObject> itemsToCreate = getItemsToCreate(currentItems, parsedData, itemsToUpdate);
+            HashMap<Integer, EmployerValueObject> currentItemsMap = new HashMap<>();
+            HashMap<Integer, EmployerValueObject> parsedDataMap = new HashMap<>();
 
-            System.out.println(itemsToUpdate.size());
-            System.out.println(itemsToCreate.size());
-            System.out.println(itemsToDelete.size());
+            List<Integer> toDelete = new ArrayList<>();
+            List<EmployerValueObject> toInsert = new ArrayList<>();
+            List<EmployerValueObject> toUpdate = new ArrayList<>();
 
+            for (EmployerValueObject item : currentItems) {
+                currentItemsMap.put(item.hashCode(), item);
+            }
 
-            if (!itemsToUpdate.isEmpty()) employerInfoRepository.multiRowUpdate(itemsToUpdate);
-            if (!itemsToDelete.isEmpty()) employerInfoRepository.multiRowDelete(itemsToDelete);
-            if (!itemsToCreate.isEmpty()) employerInfoRepository.multiRowInsert(itemsToCreate);
+            for (EmployerValueObject item : parsedData) {
+
+                if (parsedDataMap.get(item.hashCode()) != null) {
+                    logger.warn("Duplicate data: " + item.getDepCode() + " : " + item.getDepJob());
+                    continue;
+                }
+
+                parsedDataMap.put(item.hashCode(), item);
+            }
+
+            for (Integer item : currentItemsMap.keySet()) {
+                if (parsedDataMap.get(item) == null) {
+                    EmployerValueObject dep = currentItemsMap.get(item);
+                    toDelete.add(dep.getId());
+                } else {
+                    EmployerValueObject parsedDataItem = parsedDataMap.get(item);
+                    EmployerValueObject currentItemsItem = currentItemsMap.get(item);
+
+                    if (!parsedDataItem.getDescription().equals(currentItemsItem.getDescription())) {
+                        parsedDataItem.setId(currentItemsItem.getId());
+                        toUpdate.add(parsedDataItem);
+                    }
+                }
+            }
+
+            for (Integer item : parsedDataMap.keySet()) {
+                if (currentItemsMap.get(item) == null) {
+                    toInsert.add(parsedDataMap.get(item));
+                }
+            }
+
+            if (!toUpdate.isEmpty()) employerInfoRepository.multiRowUpdate(toUpdate);
+            if (!toDelete.isEmpty()) employerInfoRepository.multiRowDelete(toDelete);
+            if (!toInsert.isEmpty()) employerInfoRepository.multiRowInsert(toInsert);
         } catch (Throwable e) {
-            throw e;
-//            logger.error(e);
+            logger.error(e);
         }
-    }
-
-    private static List<EmployerValueObject> getItemsToDelete(
-            List<EmployerValueObject> currentItems,
-            List<EmployerValueObject> parsedItems,
-            List<EmployerValueObject> itemsToUpdate
-    ) {
-        List<EmployerValueObject> preRes = DataDiff.getDiff(currentItems, parsedItems, false);
-
-        return DataDiff.getDiff(
-                preRes,
-                itemsToUpdate,
-                false
-        );
-    }
-
-    private static List<EmployerValueObject> getItemsToCreate(
-            List<EmployerValueObject> currentItems,
-            List<EmployerValueObject> parsedItems,
-            List<EmployerValueObject> itemsToUpdate
-    ) {
-        List<EmployerValueObject> preRes = DataDiff.getDiff(parsedItems, currentItems, false);
-
-        return DataDiff.getDiff(
-                preRes,
-                itemsToUpdate,
-                false
-        );
     }
 }

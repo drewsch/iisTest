@@ -3,13 +3,10 @@ package org.iis.Repositories;
 import org.apache.log4j.Logger;
 import org.iis.Common.DatabaseManager;
 import org.iis.DTO.EmployerValueObject;
-import org.iis.Export.XmlSaver;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class EmployerInfoRepository {
@@ -32,6 +29,7 @@ public class EmployerInfoRepository {
         } catch (Throwable e) {
             logger.error("Unable to get instance of repository: " + e.getMessage());
         }
+
         return null;
     }
 
@@ -88,10 +86,10 @@ public class EmployerInfoRepository {
     }
 
     /**
-     * @param data list of items selected for deletion
+     * @param data list of items ids selected for deletion
      * @throws SQLException throws in case of unreachable database
      */
-    public void multiRowDelete(List<EmployerValueObject> data) throws SQLException {
+    public void multiRowDelete(List<Integer> data) throws SQLException {
         try (Statement statement = conn.createStatement()){
             statement.execute("DELETE FROM employer_info WHERE \"id\" IN (" + prepareMultiRowDeleteQuery(data) + ")");
         }
@@ -115,14 +113,14 @@ public class EmployerInfoRepository {
     }
 
     /**
-     * @param data list of parsed items
+     * @param data list of parsed items ids
      * @return completed multirow values string for SQL query
      */
-    private String prepareMultiRowDeleteQuery(List<EmployerValueObject> data) {
+    private String prepareMultiRowDeleteQuery(List<Integer> data) {
         StringBuilder result = new StringBuilder();
 
-        for (EmployerValueObject item : data) {
-            result.append(item.getId()).append(",");
+        for (Integer item : data) {
+            result.append(item).append(",");
         }
 
         return (result.toString().isEmpty()) ? null : result.toString().replaceAll(".$", "");

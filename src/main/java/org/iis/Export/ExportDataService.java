@@ -18,8 +18,7 @@ public class ExportDataService {
      *
      * @param outputFileName name of destination file
      */
-    public static void exportData(String outputFileName)
-    {
+    public static void exportData(String outputFileName) {
         List<EmployerValueObject> result;
         try {
             assert employerInfoRepository != null;
